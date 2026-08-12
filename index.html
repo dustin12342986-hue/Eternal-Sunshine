@@ -1,469 +1,842 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Eternal Sunshine</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23161022'/%3E%3Ccircle cx='32' cy='36' r='15' fill='%23FFC66E'/%3E%3C/svg%3E" />
+<!-- PWA install support: manifest + icons + theme color. Same minimal pattern
+     used across this app ecosystem (Adulting, Businessing) so install behavior
+     and branding stay consistent app to app. -->
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icon-192.png">
 <meta name="theme-color" content="#FFC66E">
-<title>Eternal Sunshine — UI Prototype</title>
 <style>
   :root{
-    /* sunrise palette */
-    --night:#161022;
-    --dusk:#1e1732;
-    --surface:#271d3d;
-    --surface-2:#2f2447;
-    --line:rgba(255,255,255,.09);
-    --ink:#F6EEE2;
-    --ink-mute:#B6A7C4;
-    --ink-faint:#8B7DA0;
-    --gold:#FFC66E;
-    --gold-hi:#FFD98A;
-    --amber:#FF9E64;
-    --coral:#FF7D6B;      /* behind pace */
-    --mint:#7FD9A6;       /* ahead / met */
-    --lav:#B79CFF;        /* elective / bluebonnet */
-    --track:rgba(255,255,255,.08);
-    --shadow:0 18px 40px -18px rgba(0,0,0,.7);
-    --r:22px;
-    font-synthesis:none;
+    --night:#161022; --dusk:#1e1732; --surface:#271d3d; --surface-2:#2f2447;
+    --line:rgba(255,255,255,.10); --ink:#F6EEE2; --muted:#B6A7C4; --faint:#8B7DA0;
+    --gold:#FFC66E; --gold-hi:#FFD98A; --amber:#FF9E64; --coral:#FF7D6B; --mint:#7FD9A6; --lav:#B79CFF;
+    --track:rgba(255,255,255,.08); --radius:16px;
+    --danger:#FF7D6B; --ok:#7FD9A6;
   }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    background:
-      radial-gradient(1200px 600px at 20% -5%, #3a2650 0%, transparent 55%),
-      radial-gradient(1000px 700px at 95% 5%, #4a2c46 0%, transparent 50%),
-      #0e0a18;
-    color:var(--ink);
-    padding:44px 24px 80px;
-    -webkit-font-smoothing:antialiased;
-  }
-  /* ambient twilight art */
-  .ambient{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
-  .ambient .glow-sun{position:absolute;left:2%;bottom:-34%;width:78vw;height:78vw;border-radius:50%;
-    background:radial-gradient(circle,rgba(255,168,110,.30),rgba(255,120,80,.10) 38%,transparent 60%);filter:blur(6px)}
-  .ambient .rays{position:absolute;left:-8%;bottom:-40%;width:60vw;height:70vw;opacity:.10;
-    background:repeating-conic-gradient(from 200deg at 30% 100%,#FFD98A 0deg 6deg,transparent 6deg 18deg);
-    -webkit-mask:radial-gradient(circle at 30% 100%,#000 0,transparent 62%);mask:radial-gradient(circle at 30% 100%,#000 0,transparent 62%)}
-  .ambient .moon-halo{position:absolute;right:3%;top:-2%;width:300px;height:300px;border-radius:50%;
-    background:radial-gradient(circle,rgba(226,216,240,.16),rgba(200,180,220,.05) 45%,transparent 66%);filter:blur(3px)}
-  .ambient .moon{position:absolute;right:7%;top:4%;width:118px;height:118px;border-radius:50%;
-    background:radial-gradient(circle at 38% 36%,#fdf5e8 0%,#efe0cf 48%,#cdbcd8 78%,#b3a2c8 100%);
-    box-shadow:0 0 70px 24px rgba(240,225,205,.18),inset -16px -12px 30px rgba(110,88,140,.55)}
-  .ambient .moon i{position:absolute;border-radius:50%;background:rgba(150,128,170,.30)}
-  .ambient .moon i:nth-child(1){width:20px;height:20px;top:26px;left:30px}
-  .ambient .moon i:nth-child(2){width:12px;height:12px;top:60px;left:64px}
-  .ambient .moon i:nth-child(3){width:9px;height:9px;top:38px;left:74px}
-  .ambient .stars{position:absolute;inset:0;opacity:.75;background-image:
-    radial-gradient(1.4px 1.4px at 12% 18%,rgba(255,255,255,.9),transparent),
-    radial-gradient(1.2px 1.2px at 24% 34%,rgba(255,246,230,.7),transparent),
-    radial-gradient(1px 1px at 40% 12%,rgba(255,255,255,.6),transparent),
-    radial-gradient(1.5px 1.5px at 55% 26%,rgba(255,255,255,.85),transparent),
-    radial-gradient(1px 1px at 68% 8%,rgba(230,220,255,.6),transparent),
-    radial-gradient(1.3px 1.3px at 82% 22%,rgba(255,255,255,.8),transparent),
-    radial-gradient(1px 1px at 90% 40%,rgba(255,246,230,.55),transparent),
-    radial-gradient(1.1px 1.1px at 16% 52%,rgba(255,255,255,.5),transparent),
-    radial-gradient(1px 1px at 34% 66%,rgba(230,220,255,.45),transparent),
-    radial-gradient(1.2px 1.2px at 74% 58%,rgba(255,255,255,.55),transparent),
-    radial-gradient(1px 1px at 6% 74%,rgba(255,246,230,.4),transparent),
-    radial-gradient(1.3px 1.3px at 60% 76%,rgba(255,255,255,.4),transparent)}
-  .ambient .cloud{position:absolute;border-radius:50%;filter:blur(34px);opacity:.42}
-  .ambient .c1{width:44vw;height:150px;left:-6%;top:30%;background:radial-gradient(ellipse,rgba(120,70,110,.6),transparent 70%)}
-  .ambient .c2{width:40vw;height:130px;right:-4%;top:52%;background:radial-gradient(ellipse,rgba(90,60,130,.55),transparent 70%)}
-  .ambient .c3{width:52vw;height:170px;left:20%;bottom:2%;background:radial-gradient(ellipse,rgba(180,90,80,.35),transparent 72%)}
-  .ambient .sky{position:absolute;inset:0}
-  .ambient .sky-night{background:linear-gradient(180deg,#140f24 0%,#241634 42%,#5b2f4e 74%,#7a3f40 100%)}
-  .ambient .sky-day{background:linear-gradient(180deg,#6ea3d6 0%,#a9c6e0 38%,#ffd98a 76%,#ffe9c4 100%);opacity:0}
-  .ambient .sun-core{position:absolute;left:15%;top:66%;width:104px;height:104px;border-radius:50%;opacity:0;
-    background:radial-gradient(circle at 50% 45%,#fffef8,#ffe6a0 46%,#ffb85e 74%,transparent 80%);
-    box-shadow:0 0 100px 46px rgba(255,205,120,.55)}
-  /* progress demo control */
-  .progress-demo{position:relative;z-index:1;max-width:1240px;margin:0 auto 26px;padding:15px 20px;border-radius:18px;
-    background:rgba(255,255,255,.05);border:1px solid var(--line);display:flex;align-items:center;gap:16px;flex-wrap:wrap;
-    backdrop-filter:blur(6px)}
-  .progress-demo label{font-size:13px;color:var(--ink);font-weight:600;white-space:nowrap}
-  .progress-demo input[type=range]{flex:1;min-width:200px;accent-color:var(--gold);height:4px}
-  .progress-demo .val{font-variant-numeric:tabular-nums;font-weight:700;color:var(--gold-hi);min-width:48px;text-align:right}
-  .progress-demo .hint{flex-basis:100%;font-size:11.5px;color:var(--ink-faint);margin:0}
-  .page-head{max-width:1240px;margin:0 auto 34px;padding:0 6px;position:relative;z-index:1}
-  .page-head h1{font-size:26px;font-weight:650;letter-spacing:-.4px}
-  .page-head .sun-emoji{color:var(--gold)}
-  .page-head p{color:var(--ink-mute);margin-top:8px;font-size:15px;max-width:640px;line-height:1.5}
-  .gallery{
-    max-width:1240px;margin:0 auto;position:relative;z-index:1;
-    display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
-    gap:30px;justify-items:center;
-  }
-  .frame-wrap{width:100%;max-width:340px}
-  .frame-label{font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);
-    text-align:center;margin-bottom:12px;font-weight:600}
-  .phone{
-    width:100%;aspect-ratio:9/19.2;background:linear-gradient(180deg,var(--dusk),var(--night));
-    border-radius:38px;padding:14px 0 0;position:relative;overflow:hidden;
-    border:1px solid rgba(255,255,255,.08);box-shadow:var(--shadow);
-  }
-  .phone::before{content:"";position:absolute;top:12px;left:50%;transform:translateX(-50%);
-    width:104px;height:6px;border-radius:6px;background:rgba(255,255,255,.12);z-index:6}
-  .screen{position:absolute;inset:0;padding:40px 18px 20px;overflow-y:auto;overflow-x:hidden}
-  .screen::-webkit-scrollbar{width:0}
-  /* status bar */
-  .statusbar{display:flex;justify-content:space-between;align-items:center;
-    font-size:12px;color:var(--ink-mute);padding:0 4px 12px;font-weight:600}
-  .statusbar .dots{letter-spacing:2px}
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--night); color:var(--ink); -webkit-font-smoothing:antialiased; min-height:100vh}
 
-  /* generic */
-  .eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint);font-weight:700}
-  .greet{font-size:13px;color:var(--ink-mute)}
-  .h-title{font-size:23px;font-weight:650;letter-spacing:-.4px;margin-top:2px}
-  .card{background:linear-gradient(180deg,var(--surface),var(--surface-2));
-    border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-top:14px;position:relative;overflow:hidden}
-  .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  /* ---- living background sky (driven by progress) ---- */
+  #ambient{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  #ambient .sky{position:absolute;inset:0;transition:opacity .6s ease}
+  #ambient .sky-night{background:linear-gradient(180deg,#140f24 0%,#241634 42%,#5b2f4e 74%,#7a3f40 100%)}
+  #ambient .sky-day{background:linear-gradient(180deg,#6ea3d6 0%,#a9c6e0 38%,#ffd98a 76%,#ffe9c4 100%);opacity:0}
+  #ambient .stars{position:absolute;inset:0;transition:opacity .6s ease;background-image:
+    radial-gradient(1.4px 1.4px at 12% 16%,rgba(255,255,255,.9),transparent),
+    radial-gradient(1.2px 1.2px at 26% 30%,rgba(255,246,230,.7),transparent),
+    radial-gradient(1px 1px at 44% 12%,rgba(255,255,255,.6),transparent),
+    radial-gradient(1.5px 1.5px at 60% 22%,rgba(255,255,255,.85),transparent),
+    radial-gradient(1px 1px at 74% 10%,rgba(230,220,255,.6),transparent),
+    radial-gradient(1.3px 1.3px at 86% 24%,rgba(255,255,255,.8),transparent),
+    radial-gradient(1px 1px at 20% 46%,rgba(255,255,255,.45),transparent),
+    radial-gradient(1.1px 1.1px at 68% 40%,rgba(255,255,255,.5),transparent)}
+  #ambient .glow-sun{position:absolute;left:6%;bottom:-32%;width:74vw;height:74vw;border-radius:50%;transition:opacity .6s ease;
+    background:radial-gradient(circle,rgba(255,168,110,.30),rgba(255,120,80,.10) 38%,transparent 60%);filter:blur(6px)}
+  #ambient .moon{position:absolute;right:8%;top:6%;width:88px;height:88px;border-radius:50%;transition:opacity .6s ease;
+    background:radial-gradient(circle at 38% 36%,#fdf5e8,#efe0cf 48%,#cdbcd8 78%,#b3a2c8 100%);
+    box-shadow:0 0 60px 20px rgba(240,225,205,.16),inset -12px -9px 22px rgba(110,88,140,.55)}
+  #ambient .moon i{position:absolute;border-radius:50%;background:rgba(150,128,170,.3)}
+  #ambient .moon i:nth-child(1){width:15px;height:15px;top:20px;left:22px}
+  #ambient .moon i:nth-child(2){width:9px;height:9px;top:46px;left:50px}
+  #ambient .moon i:nth-child(3){width:7px;height:7px;top:28px;left:56px}
+  #ambient .sun-core{position:absolute;left:50%;top:66%;width:70px;height:70px;border-radius:50%;opacity:0;transition:opacity .6s ease, top .6s ease;
+    background:radial-gradient(circle at 50% 45%,#fffef8,#ffe6a0 46%,#ffb85e 74%,transparent 80%);
+    box-shadow:0 0 60px 22px rgba(255,205,120,.4);transform:translate(-50%,0)}
+  /* legibility veil so text stays readable as the sky brightens */
+  #veil{position:fixed;inset:0;z-index:0;pointer-events:none;background:linear-gradient(180deg,rgba(14,10,24,.34),rgba(14,10,24,.56))}
+
+  /* ---- layout ---- */
+  .wrap{position:relative;z-index:1;max-width:620px;margin:0 auto;padding:26px 18px 96px}
+  .apphead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:6px}
+  .apphead .greet{font-size:13px;color:var(--muted)}
+  .apphead h1{font-size:25px;font-weight:650;letter-spacing:-.4px;margin:2px 0 0}
+  .apphead h1 .s{color:var(--gold)}
+  .muted{color:var(--muted)} .hint{color:var(--faint);font-size:12px}
+  .row{display:flex;gap:8px;align-items:center} .row.between{justify-content:space-between}
+  .hr{height:1px;background:var(--line);margin:14px 0}
+  .section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.13em;color:var(--faint);margin:22px 4px 8px}
+
+  .card{background:linear-gradient(180deg,var(--surface),var(--surface-2));border:1px solid var(--line);
+    border-radius:var(--radius);padding:15px;margin-bottom:12px;position:relative;overflow:hidden}
+  .card.tap{cursor:pointer;transition:transform .12s ease,border-color .12s ease}
+  .card.tap:active{transform:scale(.99)} .card.tap:hover{border-color:rgba(255,198,110,.35)}
+
   .goal-name{font-size:16px;font-weight:620;letter-spacing:-.2px}
-  .goal-sub{font-size:12.5px;color:var(--ink-mute);margin-top:3px}
-  .chip{font-size:11px;font-weight:700;padding:4px 9px;border-radius:100px;white-space:nowrap;letter-spacing:.02em}
+  .goal-sub{font-size:12.5px;color:var(--muted);margin-top:3px}
+  .chip{font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:100px;white-space:nowrap}
   .chip.behind{background:rgba(255,125,107,.16);color:var(--coral)}
   .chip.pace{background:rgba(127,217,166,.16);color:var(--mint)}
   .chip.est{background:rgba(183,156,255,.15);color:var(--lav)}
+  .chip.done{background:rgba(127,217,166,.18);color:var(--mint)}
 
-  /* horizon meter: sky band with sun at progress + time marker */
-  .horizon{position:relative;height:74px;margin:16px 0 4px;border-radius:16px;overflow:hidden;
-    background:linear-gradient(180deg,#241a3a 0%,#3d2550 45%,#7a3f5a 78%,#c9714f 100%)}
-  .horizon .stars{position:absolute;inset:0;background-image:
-     radial-gradient(1px 1px at 20% 30%,rgba(255,255,255,.5),transparent),
-     radial-gradient(1px 1px at 60% 18%,rgba(255,255,255,.4),transparent),
-     radial-gradient(1px 1px at 80% 40%,rgba(255,255,255,.35),transparent),
-     radial-gradient(1px 1px at 38% 22%,rgba(255,255,255,.3),transparent)}
-  .horizon .ground{position:absolute;left:0;right:0;bottom:0;height:16px;
-    background:linear-gradient(180deg,rgba(20,12,26,.2),rgba(10,6,16,.85))}
-  .horizon .sun{position:absolute;bottom:10px;width:30px;height:30px;border-radius:50%;
-    background:radial-gradient(circle at 50% 40%,var(--gold-hi),var(--amber));
-    box-shadow:0 0 22px 6px rgba(255,180,90,.55);transform:translateX(-50%)}
-  .horizon .timemark{position:absolute;top:6px;bottom:6px;width:2px;border-radius:2px;
+  /* horizontal progress band: sun at progress, optional time marker */
+  .horizon{position:relative;height:64px;margin:14px 0 4px;border-radius:14px;overflow:hidden;
+    background:linear-gradient(180deg,#241a3a,#3d2550 45%,#7a3f5a 78%,#c9714f 100%)}
+  .horizon.big{height:104px}
+  .horizon .hstars{position:absolute;inset:0;background-image:
+    radial-gradient(1px 1px at 22% 30%,rgba(255,255,255,.5),transparent),
+    radial-gradient(1px 1px at 62% 20%,rgba(255,255,255,.4),transparent),
+    radial-gradient(1px 1px at 82% 40%,rgba(255,255,255,.35),transparent)}
+  .horizon .hsun{position:absolute;bottom:9px;width:26px;height:26px;border-radius:50%;transform:translateX(-50%);
+    background:radial-gradient(circle at 50% 40%,var(--gold-hi),var(--amber));box-shadow:0 0 18px 5px rgba(255,180,90,.55)}
+  .horizon.big .hsun{width:34px;height:34px}
+  .horizon .hground{position:absolute;left:0;right:0;bottom:0;height:14px;background:linear-gradient(180deg,rgba(20,12,26,.2),rgba(10,6,16,.85))}
+  .horizon .hmark{position:absolute;top:5px;bottom:5px;width:2px;border-radius:2px;
     background:repeating-linear-gradient(180deg,rgba(255,255,255,.75) 0 4px,transparent 4px 8px)}
-  .horizon .timemark::after{content:"now";position:absolute;top:-2px;left:5px;font-size:9px;color:rgba(255,255,255,.8);font-weight:700}
+  .horizon .hmark::after{content:"now";position:absolute;top:-1px;left:5px;font-size:8.5px;color:rgba(255,255,255,.85);font-weight:700}
+
   .meta-row{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
-  .big-num{font-size:15px;font-weight:650}
-  .big-num small{font-size:12px;color:var(--ink-mute);font-weight:500}
-  .week-move{display:flex;align-items:center;gap:7px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);
-    font-size:12.5px;color:var(--ink-mute)}
+  .big-num{font-size:14.5px;font-weight:650} .big-num small{font-size:12px;color:var(--muted);font-weight:500}
+  .week-move{display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)}
   .week-move b{color:var(--ink);font-weight:600}
   .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);flex:none;box-shadow:0 0 8px var(--amber)}
 
-  /* arc gauge (detail headline) */
-  .gauge-wrap{display:flex;align-items:center;gap:16px;margin-top:8px}
-  .gauge{position:relative;width:132px;height:78px;flex:none}
-  .gauge .label{position:absolute;left:0;right:0;top:34px;text-align:center}
-  .gauge .pct{font-size:30px;font-weight:680;letter-spacing:-1px;line-height:1}
-  .gauge .cap{font-size:10px;color:var(--ink-faint);letter-spacing:.1em;text-transform:uppercase;margin-top:3px}
-  .gauge-side .lifted{font-size:13px;color:var(--ink);font-weight:600}
-  .gauge-side .proj{font-size:12.5px;color:var(--ink-mute);margin-top:6px;line-height:1.45}
-  .gauge-side .proj b{color:var(--gold-hi)}
-
-  /* stage meters */
-  .stage{margin-top:13px}
+  /* stage / milestone meters */
+  .stage{margin-top:12px}
   .stage-row{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;margin-bottom:6px}
-  .stage-name{font-weight:600;color:var(--ink)}
-  .stage-name .w{color:var(--ink-faint);font-weight:500;font-size:11px;margin-left:5px}
-  .stage-val{color:var(--ink-mute);font-variant-numeric:tabular-nums}
-  .stage-val .trend{color:var(--mint);font-weight:700}
+  .stage-name{font-weight:600;color:var(--ink)} .stage-name .w{color:var(--faint);font-weight:500;font-size:11px;margin-left:5px}
+  .stage-val{color:var(--muted);font-variant-numeric:tabular-nums}
   .bar{height:9px;border-radius:100px;background:var(--track);overflow:hidden;position:relative}
-  .bar>span{position:absolute;left:0;top:0;bottom:0;border-radius:100px;
-    background:linear-gradient(90deg,var(--amber),var(--gold-hi))}
-  .stage.wall .stage-name{color:var(--coral)}
+  .bar>span{position:absolute;left:0;top:0;bottom:0;border-radius:100px;background:linear-gradient(90deg,var(--amber),var(--gold-hi))}
+  .stage.wall .stage-name{color:var(--coral)} .stage.wall .stage-val{color:var(--coral)}
   .stage.wall .bar>span{background:linear-gradient(90deg,#c0503f,var(--coral))}
-  .stage.wall .stage-val{color:var(--coral)}
 
-  /* bluebonnet callout */
-  .bb{display:flex;gap:11px;margin-top:16px;background:rgba(183,156,255,.09);
-    border:1px solid rgba(183,156,255,.22);border-radius:16px;padding:13px}
-  .bb .av{width:30px;height:30px;border-radius:50%;flex:none;
-    background:radial-gradient(circle at 40% 35%,#d7c6ff,var(--lav));box-shadow:0 0 14px rgba(183,156,255,.5)}
-  .bb .body{font-size:12.5px;line-height:1.5;color:var(--ink)}
-  .bb .who{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--lav);font-weight:700;margin-bottom:3px}
+  /* action rows */
+  .action{display:flex;gap:11px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+  .action:last-child{border-bottom:0}
+  .check{width:22px;height:22px;border-radius:7px;border:2px solid var(--faint);flex:none;margin-top:1px;cursor:pointer;position:relative;background:none}
+  .check.on{background:var(--gold);border-color:var(--gold)}
+  .check.on::after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;color:#3a2410;font-size:13px;font-weight:900}
+  .a-txt{font-size:13.5px;line-height:1.4;flex:1}
+  .a-txt.done{color:var(--faint);text-decoration:line-through}
+  .a-txt small{display:block;color:var(--faint);font-size:11px;margin-top:2px;text-decoration:none}
+  .a-tools{display:flex;gap:6px;align-items:center}
 
   /* gates */
-  .gates{margin-top:16px}
-  .gate{display:flex;align-items:center;gap:10px;font-size:12.5px;padding:8px 0;border-bottom:1px solid var(--line)}
+  .gate{display:flex;align-items:center;gap:10px;font-size:12.5px;padding:9px 0;border-bottom:1px solid var(--line)}
   .gate:last-child{border-bottom:0}
-  .gate .g-ic{width:18px;height:18px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:11px;font-weight:800}
+  .gate .g-ic{width:20px;height:20px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:11px;font-weight:800;cursor:pointer}
   .gate.done .g-ic{background:rgba(127,217,166,.2);color:var(--mint)}
   .gate.wip .g-ic{background:rgba(255,198,110,.18);color:var(--gold)}
   .gate.no .g-ic{background:rgba(255,125,107,.16);color:var(--coral)}
   .gate .g-txt{color:var(--ink)}
-  .gate .g-txt small{display:block;color:var(--ink-faint);font-size:11px;margin-top:1px}
 
-  .section-h{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);
-    font-weight:700;margin:20px 4px 4px}
+  /* buttons / fields (shared plumbing classes, dark themed) */
+  .btn-primary{background:linear-gradient(90deg,var(--amber),var(--gold-hi));color:#3a2410;border:none;padding:10px 16px;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer}
+  .btn-sm{border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--ink);padding:7px 12px;border-radius:10px;font-size:13px;cursor:pointer}
+  .btn-ghost{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px}
+  .btn-gold{background:rgba(255,198,110,.16);border:1px solid transparent;color:var(--gold-hi);padding:7px 12px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px}
+  .field input,.field select,.field textarea{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font-size:14px;font-family:inherit;background:rgba(0,0,0,.22);color:var(--ink)}
+  .status-pill{font-size:12px;padding:2px 10px;border-radius:999px}
+  .status-pill.done{background:rgba(127,217,166,.18);color:var(--mint)} .status-pill.none{background:rgba(255,255,255,.07);color:var(--muted)}
 
-  /* horizon check ritual */
-  .ritual-goal{font-size:13.5px;font-weight:620;margin-top:14px;display:flex;align-items:center;gap:8px}
-  .ritual-goal .pip{width:8px;height:8px;border-radius:50%;background:var(--gold)}
-  .move{display:flex;gap:11px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);
-    border-radius:14px;padding:12px;margin-top:9px}
-  .move .box{width:20px;height:20px;border-radius:7px;border:2px solid var(--ink-faint);flex:none;margin-top:1px}
-  .move.on .box{background:var(--gold);border-color:var(--gold);position:relative}
-  .move.on .box::after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;color:#3a2410;font-size:13px;font-weight:900}
-  .move .m-txt{font-size:12.5px;line-height:1.45}
-  .move .m-txt small{display:block;color:var(--ink-faint);margin-top:3px;font-size:11px}
-  .send-btn{margin-top:18px;width:100%;padding:14px;border:none;border-radius:15px;font-size:14px;font-weight:700;
-    color:#3a2410;background:linear-gradient(90deg,var(--amber),var(--gold-hi));cursor:pointer;letter-spacing:.01em}
-  .send-note{text-align:center;font-size:11.5px;color:var(--ink-faint);margin-top:9px}
+  /* modal / toast */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(8,5,16,.62);display:flex;align-items:center;justify-content:center;z-index:80;padding:20px}
+  .modal{background:var(--dusk);border:1px solid var(--line);border-radius:16px;padding:20px;max-width:520px;width:100%;max-height:86vh;overflow-y:auto}
+  .modal h3{margin:0 0 14px}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+  #toastRoot{position:fixed;left:50%;transform:translateX(-50%);bottom:86px;z-index:90}
+  .toast{background:#0f0a1c;border:1px solid var(--line);color:var(--ink);padding:10px 16px;border-radius:11px;font-size:13.5px;box-shadow:0 8px 22px rgba(0,0,0,.5)}
 
-  /* suggestion tray */
-  .sugg{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:12px}
-  .sugg .src{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;letter-spacing:.04em;
-    color:var(--lav);background:rgba(183,156,255,.12);padding:4px 8px;border-radius:100px}
-  .sugg .obs{font-size:12.5px;color:var(--ink-mute);line-height:1.5;margin-top:10px}
-  .sugg .act{font-size:13px;color:var(--ink);font-weight:600;line-height:1.45;margin-top:8px}
-  .sugg .btns{display:flex;gap:8px;margin-top:12px}
-  .sugg .btns button{flex:1;padding:9px;border-radius:11px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--ink-mute)}
-  .sugg .btns .promote{background:rgba(255,198,110,.16);border-color:transparent;color:var(--gold-hi)}
-  .tabbar{position:sticky;bottom:-20px;left:0;right:0;display:flex;justify-content:space-around;padding:14px 0 18px;margin-top:22px;
-    border-top:1px solid var(--line);background:var(--night);box-shadow:0 -12px 20px -6px var(--night)}
-  .tabbar span{font-size:19px;opacity:.4}
-  .tabbar span.on{opacity:1}
-  /* keep scene text legible across the night->day range */
-  .page-head h1,.page-head p,.frame-label,.progress-demo label,.progress-demo .hint,.progress-demo .val{
-    text-shadow:0 1px 4px rgba(12,7,20,.55)}
+  /* bottom nav */
+  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;justify-content:space-around;
+    padding:9px 0 14px;background:rgba(15,10,28,.92);backdrop-filter:blur(10px);border-top:1px solid var(--line)}
+  .tabbar button{background:none;border:none;color:var(--faint);font-size:11px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:2px 14px}
+  .tabbar button .ic{font-size:19px;line-height:1}
+  .tabbar button.on{color:var(--gold)}
+
+  /* assistant (Blue Bonnet) */
+  .as-bubble{position:fixed;right:18px;bottom:78px;width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;z-index:70;
+    background:radial-gradient(circle at 40% 35%,#d7c6ff,var(--lav));color:#241436;font-size:22px;box-shadow:0 6px 18px rgba(120,90,180,.5);display:flex;align-items:center;justify-content:center}
+  .as-panel{position:fixed;right:18px;bottom:140px;width:340px;max-width:calc(100vw - 36px);height:460px;max-height:calc(100vh - 170px);
+    background:var(--dusk);border:1px solid var(--line);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:70;display:none;flex-direction:column;overflow:hidden}
+  .as-panel.open{display:flex}
+  .as-header{background:linear-gradient(90deg,#6a4fa0,var(--lav));color:#fff;padding:12px 14px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+  .as-header button{background:none;border:none;color:#fff;font-size:16px;cursor:pointer}
+  .as-body{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+  .as-row{display:flex} .as-row.as-user{justify-content:flex-end}
+  .as-text{max-width:85%;padding:8px 12px;border-radius:12px;font-size:13px;line-height:1.45;white-space:pre-wrap}
+  .as-row.as-user .as-text{background:var(--amber);color:#3a2410;border-bottom-right-radius:3px}
+  .as-row.as-assistant .as-text{background:var(--surface-2);color:var(--ink);border-bottom-left-radius:3px}
+  .as-action-note{margin-top:6px;font-size:11px;color:var(--mint)}
+  .as-input-row{display:flex;gap:6px;padding:10px;border-top:1px solid var(--line)}
+  .as-input-row input{flex:1;padding:8px 10px;border:1px solid var(--line);border-radius:9px;font-size:13px;background:rgba(0,0,0,.22);color:var(--ink)}
+  .as-input-row button{background:var(--lav);color:#241436;border:none;border-radius:9px;padding:0 14px;cursor:pointer;font-size:13px;font-weight:700}
+
+  .empty{text-align:center;color:var(--muted);padding:30px 10px;font-size:14px}
 </style>
 </head>
 <body>
-<div class="ambient">
-  <div class="sky sky-night"></div>
-  <div class="sky sky-day"></div>
+<div id="ambient">
+  <div class="sky sky-night"></div><div class="sky sky-day"></div>
   <div class="stars"></div>
-  <div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div>
-  <div class="moon-halo"></div>
-  <div class="moon"><i></i><i></i><i></i></div>
-  <div class="rays"></div>
   <div class="glow-sun"></div>
+  <div class="moon"><i></i><i></i><i></i></div>
   <div class="sun-core"></div>
 </div>
-<div class="page-head">
-  <h1><span class="sun-emoji">☀</span> Eternal Sunshine — screen prototype</h1>
-  <p>First visual pass on the four screens. The metaphor is literal: your progress is <em>how high the sun has risen</em>, and a dashed "now" marker shows where <em>time</em> says you should be. The gap between them is the drift. Real goals as the content.</p>
-</div>
+<div id="veil"></div>
 
-<div class="progress-demo">
-  <label>☾ → ☀ Overall progress</label>
-  <input id="prog" type="range" min="0" max="100" value="34">
-  <span class="val" id="progVal">34%</span>
-  <p class="hint">Drag it. The night burns off into daylight as you close in on the goal — the sky <em>is</em> the progress bar. (In the app this drives each goal's own screen as its readiness climbs.)</p>
-</div>
-
-<div class="gallery">
-
-  <!-- SCREEN 1: HORIZON HOME -->
-  <div class="frame-wrap">
-    <div class="frame-label">1 · The Horizon</div>
-    <div class="phone"><div class="screen">
-      <div class="statusbar"><span>9:41</span><span class="dots">● ● ●</span></div>
-      <div class="greet">Tuesday morning, Dusty</div>
-      <div class="h-title">The Horizon</div>
-
-      <!-- Spain: date-anchored -->
-      <div class="card">
-        <div class="card-top">
-          <div><div class="goal-name">Spain</div><div class="goal-sub">May 2027 · in ~9 months</div></div>
-          <span class="chip pace">On pace</span>
-        </div>
-        <div class="horizon">
-          <div class="stars"></div>
-          <div class="timemark" style="left:38%"></div>
-          <div class="sun" style="left:41%"></div>
-          <div class="ground"></div>
-        </div>
-        <div class="meta-row">
-          <div class="big-num">41% <small>of the path done</small></div>
-          <div class="big-num" style="color:var(--mint)">+3% <small>ahead of time</small></div>
-        </div>
-        <div class="week-move"><span class="dot"></span><span><b>This week:</b> move $600 to the Spain fund</span></div>
-      </div>
-
-      <!-- ADV Media: condition-anchored -->
-      <div class="card">
-        <div class="card-top">
-          <div><div class="goal-name">Step back from ADV Media</div><div class="goal-sub">Projected ~14 months</div></div>
-          <span class="chip est">Est · low confidence</span>
-        </div>
-        <div class="horizon">
-          <div class="stars"></div>
-          <div class="sun" style="left:48%"></div>
-          <div class="ground"></div>
-        </div>
-        <div class="meta-row">
-          <div class="big-num">48% <small>of the load lifted</small></div>
-          <div class="big-num" style="color:var(--coral)">Scheduling <small>is the wall</small></div>
-        </div>
-        <div class="week-move"><span class="dot"></span><span><b>This week:</b> auto-roster crew on the next 2 shows</span></div>
-      </div>
-
-      <!-- Terciopelo, dimmed -->
-      <div class="card" style="opacity:.62">
-        <div class="card-top">
-          <div><div class="goal-name">Terciopelo becomes the focus</div><div class="goal-sub">No date yet · fed by the studio apps</div></div>
-          <span class="chip est">Est</span>
-        </div>
-        <div class="horizon" style="height:52px"><div class="stars"></div><div class="sun" style="left:22%;width:24px;height:24px"></div><div class="ground"></div></div>
-      </div>
-
-      <div class="tabbar"><span class="on">☀</span><span>◎</span><span>✎</span><span>◈</span></div>
-    </div></div>
-  </div>
-
-  <!-- SCREEN 2: GOAL DETAIL -->
-  <div class="frame-wrap">
-    <div class="frame-label">2 · Goal detail — ADV Media</div>
-    <div class="phone"><div class="screen">
-      <div class="statusbar"><span>9:41</span><span class="dots">‹ back</span></div>
-      <div class="eyebrow">Condition-anchored goal</div>
-      <div class="h-title" style="font-size:20px">Step back from ADV Media</div>
-
-      <div class="gauge-wrap">
-        <div class="gauge">
-          <svg viewBox="0 0 132 78" width="132" height="78">
-            <path d="M12 72 A54 54 0 0 1 120 72" fill="none" stroke="rgba(255,255,255,.09)" stroke-width="11" stroke-linecap="round"/>
-            <path d="M12 72 A54 54 0 0 1 120 72" fill="none" stroke="url(#g)" stroke-width="11" stroke-linecap="round"
-                  stroke-dasharray="169.6" stroke-dashoffset="88.2"/>
-            <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0" stop-color="#FF9E64"/><stop offset="1" stop-color="#FFD98A"/></linearGradient></defs>
-          </svg>
-          <div class="label"><div class="pct">48<span style="font-size:16px">%</span></div><div class="cap">load lifted</div></div>
-        </div>
-        <div class="gauge-side">
-          <div class="lifted">Your life, coming back</div>
-          <div class="proj">At this pace, ready in <b>~14 months</b>. The number moves when the wall moves.</div>
-        </div>
-      </div>
-
-      <div class="section-h">The five stages · weakest link governs</div>
-      <div class="stage"><div class="stage-row"><span class="stage-name">Execute <span class="w">·40%</span></span><span class="stage-val">71% <span class="trend">↑</span></span></div><div class="bar"><span style="width:71%"></span></div></div>
-      <div class="stage wall"><div class="stage-row"><span class="stage-name">Win → Schedule <span class="w">·25%</span></span><span class="stage-val">22%</span></div><div class="bar"><span style="width:22%"></span></div></div>
-      <div class="stage"><div class="stage-row"><span class="stage-name">Bill &amp; Collect <span class="w">·15%</span></span><span class="stage-val">64% <span class="trend">↑</span></span></div><div class="bar"><span style="width:64%"></span></div></div>
-      <div class="stage"><div class="stage-row"><span class="stage-name">Qualify &amp; Bid <span class="w">·12%</span></span><span class="stage-val">58%</span></div><div class="bar"><span style="width:58%"></span></div></div>
-      <div class="stage"><div class="stage-row"><span class="stage-name">Source <span class="w">·8%</span></span><span class="stage-val">80% <span class="trend">↑</span></span></div><div class="bar"><span style="width:80%"></span></div></div>
-
-      <div class="bb">
-        <div class="av"></div>
-        <div class="body"><div class="who">Blue Bonnet</div>
-        Scheduling is holding your whole date. It still needs a manual crew pass on ~3 of every 5 shows — and it can't improve until Teams feeds it live crew availability. That's the one move worth this month.</div>
-      </div>
-
-      <div class="section-h">What still ties you here</div>
-      <div class="gates">
-        <div class="gate done"><span class="g-ic">✓</span><span class="g-txt">Revenue floor holds without you</span></div>
-        <div class="gate wip"><span class="g-ic">◐</span><span class="g-txt">Crew can run <em>and</em> front the company<small>Execution yes · representing you: not yet</small></span></div>
-        <div class="gate no"><span class="g-ic">○</span><span class="g-txt">EIC seat covered when you travel</span></div>
-      </div>
-      <div class="tabbar"><span>☀</span><span class="on">◎</span><span>✎</span><span>◈</span></div>
-    </div></div>
-  </div>
-
-  <!-- SCREEN 3: HORIZON CHECK -->
-  <div class="frame-wrap">
-    <div class="frame-label">3 · Weekly Horizon Check</div>
-    <div class="phone"><div class="screen">
-      <div class="statusbar"><span>9:41</span><span class="dots">● ● ●</span></div>
-      <div class="eyebrow">Sunday ritual</div>
-      <div class="h-title">Horizon Check</div>
-      <div class="bb" style="margin-top:14px">
-        <div class="av"></div>
-        <div class="body"><div class="who">Blue Bonnet</div>
-        Three goals moved this week. Here's the one thing that matters most for each — pick what you'll actually commit to and I'll drop it into Adulting as daily steps.</div>
-      </div>
-
-      <div class="ritual-goal"><span class="pip"></span>Step back from ADV Media</div>
-      <div class="move on"><div class="box"></div><div class="m-txt">Turn on auto-rostering for the next 2 shows<small>Hits the wall stage directly · pulls the date in</small></div></div>
-
-      <div class="ritual-goal"><span class="pip"></span>Spain</div>
-      <div class="move on"><div class="box"></div><div class="m-txt">Move $600 to the Spain fund<small>Keeps you 3% ahead of pace</small></div></div>
-      <div class="move"><div class="box"></div><div class="m-txt">Price two coastal stays for the second week<small>Optional · nudges planning forward</small></div></div>
-
-      <div class="ritual-goal"><span class="pip"></span>Terciopelo</div>
-      <div class="move"><div class="box"></div><div class="m-txt">Book one boudoir session for the portfolio<small>Optional this week</small></div></div>
-
-      <button class="send-btn">Send 2 moves to Adulting →</button>
-      <div class="send-note">They become daily tasks. Eternal Sunshine keeps the horizon; Adulting does the doing.</div>
-      <div class="tabbar"><span>☀</span><span>◎</span><span class="on">✎</span><span>◈</span></div>
-    </div></div>
-  </div>
-
-  <!-- SCREEN 4: SUGGESTION TRAY -->
-  <div class="frame-wrap">
-    <div class="frame-label">4 · Suggestion tray</div>
-    <div class="phone"><div class="screen">
-      <div class="statusbar"><span>9:41</span><span class="dots">● ● ●</span></div>
-      <div class="eyebrow">Derived from your other apps</div>
-      <div class="h-title">What could move things</div>
-      <p style="font-size:12.5px;color:var(--ink-mute);margin-top:8px;line-height:1.5">Blue Bonnet surfaces these from what it sees elsewhere. Nothing lands on a goal until you promote it.</p>
-
-      <div class="sugg">
-        <span class="src">◆ Project Manager</span>
-        <div class="obs">Last 5 shows: you hand-allocated crew on 3. Each one cost ~40 min you didn't need to spend.</div>
-        <div class="act">Add “automate crew allocation” as an ADV Media milestone action.</div>
-        <div class="btns"><button>Dismiss</button><button class="promote">Promote →</button></div>
-      </div>
-
-      <div class="sugg">
-        <span class="src">◆ Screening Room</span>
-        <div class="obs">Your boudoir set scored in the top 10% for Instagram. Terciopelo's content engine is outpacing its bookings.</div>
-        <div class="act">Nudge the “Terciopelo becomes the focus” goal — supply is ahead of demand.</div>
-        <div class="btns"><button>Dismiss</button><button class="promote">Promote →</button></div>
-      </div>
-
-      <div class="sugg">
-        <span class="src">◆ BidPilot</span>
-        <div class="obs">Bids are now surfacing fully scored — you haven't opened a portal by hand in 3 weeks.</div>
-        <div class="act">Mark the Source stage past its done-line (below 5% touches).</div>
-        <div class="btns"><button>Dismiss</button><button class="promote">Promote →</button></div>
-      </div>
-      <div class="tabbar"><span>☀</span><span>◎</span><span>✎</span><span class="on">◈</span></div>
-    </div></div>
-  </div>
-
-</div>
+<div class="wrap" id="app"></div>
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+<div id="asRoot"></div>
 
 <script>
-(function(){
-  var clamp=function(x){return Math.max(0,Math.min(1,x));};
-  var el=function(s){return document.querySelector(s);};
-  var skyDay=el('.sky-day'), stars=el('.stars'), moon=el('.moon'), halo=el('.moon-halo'),
-      glow=el('.glow-sun'), rays=el('.rays'), sun=el('.sun-core'),
-      c1=el('.c1'), c2=el('.c2'), c3=el('.c3'),
-      slider=el('#prog'), val=el('#progVal');
+"use strict";
 
-  function setProgress(p){
-    p=clamp(p);
-    // sky crossfades night -> day
-    skyDay.style.opacity = p;
-    // stars fade out early
-    stars.style.opacity = 0.8*clamp(1 - p/0.45);
-    // moon sinks / fades by mid-morning
-    var moonO = clamp(1 - p/0.72);
-    moon.style.opacity = moonO;
-    halo.style.opacity = moonO;
-    moon.style.transform = 'translateY(' + (p*70) + 'px)';
-    // horizon glow intensifies
-    glow.style.opacity = 0.45 + 0.55*p;
-    rays.style.opacity = 0.10 + 0.16*clamp((p-0.2)/0.8);
-    // the sun itself rises into the sky and brightens
-    sun.style.opacity = clamp((p-0.22)/0.78);
-    sun.style.top = (66 - 54*p) + '%';
-    var s = 0.8 + 0.7*p; sun.style.transform = 'scale(' + s + ')';
-    // clouds thin out at midday
-    var cl = 0.42*clamp(1 - p*0.55);
-    c1.style.opacity=cl; c2.style.opacity=cl; c3.style.opacity=cl*1.3;
-    val.textContent = Math.round(p*100) + '%';
-  }
-  slider.addEventListener('input', function(){ setProgress(this.value/100); });
-  setProgress(slider.value/100);
+/* ===========================================================================
+   1. APP CONFIG — sibling of Adulting & Businessing on the same origin.
+   =========================================================================== */
+const APP = {
+  name: "Eternal Sunshine",
+  storageKey: "eternal-sunshine-v1",
+  driveFileName: "eternal-sunshine-state.json",
+  tokenSessionKey: "eternalsunshine-gcal-token",
+  assistantName: "Blue Bonnet",
+  assistantEmoji: "☀️",
+  siblingStorageKeys: ["adulting-state-v1", "businessing-state-v1"], // inherit Google/Worker settings
+};
+const ADULTING_KEY = "adulting-state-v1"; // where promoted weekly moves land
 
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("./sw.js");
+/* ===========================================================================
+   2. STATE
+   =========================================================================== */
+function defaultState() {
+  return {
+    goals: [],
+    updatedAt: Date.now(),
+    settings: {
+      googleClientId: "", defaultCalendarId: "primary",
+      assistantProxyUrl: "",
+      assistantCheckins: false, assistantCheckinHours: 3, lastAssistantCheckinAt: null,
+      notificationsEnabled: false,
+    },
+  };
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem(APP.storageKey);
+    if (!raw) { const s = defaultState(); inheritSiblingSettings(s); return s; }
+    const parsed = JSON.parse(raw);
+    const merged = Object.assign(defaultState(), parsed);
+    merged.settings = Object.assign(defaultState().settings, parsed.settings || {});
+    merged.goals = Array.isArray(parsed.goals) ? parsed.goals : [];
+    if (!merged.updatedAt) merged.updatedAt = Date.now();
+    inheritSiblingSettings(merged);
+    return merged;
+  } catch (e) { console.error("Failed to load state, starting fresh.", e); const s = defaultState(); inheritSiblingSettings(s); return s; }
+}
+function inheritSiblingSettings(state) {
+  for (const key of APP.siblingStorageKeys || []) {
+    try {
+      const raw = localStorage.getItem(key); if (!raw) continue;
+      const s = (JSON.parse(raw) || {}).settings || {};
+      const proxy = s.assistantProxyUrl || s.blueBonnetProxyUrl;
+      if (!state.settings.assistantProxyUrl && proxy) state.settings.assistantProxyUrl = proxy;
+      if (!state.settings.googleClientId && s.googleClientId) state.settings.googleClientId = s.googleClientId;
+    } catch (e) {}
   }
+}
+function saveState() { localStorage.setItem(APP.storageKey, JSON.stringify(STATE)); }
+
+let STATE = loadState();
+let VIEW = { name: "horizon", goalId: null }; // not persisted
+let driveSyncTimer = null;
+
+function persist() { STATE.updatedAt = Date.now(); saveState(); render(); scheduleDrivePush(); }
+function scheduleDrivePush() {
+  clearTimeout(driveSyncTimer);
+  driveSyncTimer = setTimeout(() => {
+    if (typeof DriveSync !== "undefined" && DriveSync.available()) DriveSync.push(STATE).catch((e) => console.warn("Drive push failed:", e));
+  }, 1500);
+}
+
+/* ===========================================================================
+   3. HELPERS
+   =========================================================================== */
+function uid() { return Math.random().toString(36).slice(2, 10) + Date.now().toString(36); }
+function todayISO() { return new Date().toISOString().slice(0, 10); }
+function clamp(x) { return Math.max(0, Math.min(1, x)); }
+function daysBetween(a, b) { return Math.round((new Date(b + "T00:00:00") - new Date(a + "T00:00:00")) / 86400000); }
+function addDaysISO(iso, days) { const d = new Date(iso + "T00:00:00"); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10); }
+function fmtDate(iso) { if (!iso) return ""; const d = new Date(iso + "T00:00:00"); return d.toLocaleDateString(undefined, { month: "short", year: "numeric" }); }
+function humanMonths(days) {
+  if (days == null) return "";
+  const m = days / 30.4;
+  if (m < 1.5) return "~" + Math.max(1, Math.round(days / 7)) + " weeks";
+  if (m < 22) return "~" + Math.round(m) + " months";
+  return "~" + (Math.round(m / 6) / 2) + " years";
+}
+function escapeHtml(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function toast(msg) { const r = document.getElementById("toastRoot"); r.innerHTML = '<div class="toast">' + escapeHtml(msg) + "</div>"; clearTimeout(toast._t); toast._t = setTimeout(() => (r.innerHTML = ""), 3200); }
+function openModal(html) { document.getElementById("modalRoot").innerHTML = '<div class="modal-backdrop" data-action="close-modal-backdrop"><div class="modal">' + html + "</div></div>"; }
+function closeModal() { document.getElementById("modalRoot").innerHTML = ""; }
+
+/* ===========================================================================
+   4. GOAL COMPUTATION
+   =========================================================================== */
+function goalProgress(g) {
+  if (!g.milestones || !g.milestones.length) return 0;
+  let tw = 0, acc = 0;
+  g.milestones.forEach((m) => {
+    const w = (typeof m.weight === "number" && m.weight > 0) ? m.weight : 1;
+    const total = (m.actions || []).length;
+    const done = (m.actions || []).filter((a) => a.done).length;
+    tw += w; acc += w * (total ? done / total : 0);
+  });
+  return tw ? acc / tw : 0;
+}
+function milestoneProgress(m) { const t = (m.actions || []).length; return t ? (m.actions.filter((a) => a.done).length) / t : 0; }
+function weakestMilestone(g) {
+  let worst = null, wp = 2;
+  (g.milestones || []).forEach((m) => { const p = milestoneProgress(m); if (p < wp) { wp = p; worst = m; } });
+  return worst;
+}
+function timeElapsed(g) {
+  if (g.type !== "date" || !g.startDate || !g.targetDate) return null;
+  const total = daysBetween(g.startDate, g.targetDate); if (total <= 0) return 1;
+  return clamp(daysBetween(g.startDate, todayISO()) / total);
+}
+function projected(g) {
+  const p = goalProgress(g);
+  if (p >= 1) return { done: true };
+  if (p <= 0) return { stalled: true };
+  const createdISO = new Date(g.createdAt || Date.now()).toISOString().slice(0, 10);
+  const days = daysBetween(createdISO, todayISO());
+  if (days < 14) return { early: true }; // not enough velocity history yet to project honestly
+  const rate = p / days; if (rate <= 0) return { stalled: true };
+  const remaining = (1 - p) / rate;
+  return { stalled: false, days: remaining, dateISO: addDaysISO(todayISO(), Math.round(remaining)) };
+}
+function thisWeekMoves(g) {
+  const out = [];
+  (g.milestones || []).forEach((m) => (m.actions || []).forEach((a) => { if (!a.done) out.push({ m, a }); }));
+  return out;
+}
+
+/* ===========================================================================
+   5. LIVING SKY (background follows the progress being viewed)
+   =========================================================================== */
+function setSky(p) {
+  p = clamp(p);
+  const q = (s) => document.querySelector(s);
+  const day = q("#ambient .sky-day"), stars = q("#ambient .stars"), moon = q("#ambient .moon"),
+        glow = q("#ambient .glow-sun"), sun = q("#ambient .sun-core");
+  if (!day) return;
+  day.style.opacity = 0.85 * p;
+  stars.style.opacity = 0.8 * clamp(1 - p / 0.45);
+  moon.style.opacity = clamp(1 - p / 0.72);
+  glow.style.opacity = 0.4 + 0.5 * p;
+  sun.style.opacity = clamp((p - 0.22) / 0.78);
+  sun.style.top = (66 - 54 * p) + "%";
+  sun.style.transform = "translate(-50%,0) scale(" + (0.7 + 0.5 * p) + ")";
+}
+function overallProgress() {
+  const gs = STATE.goals || []; if (!gs.length) return 0.12;
+  return gs.reduce((s, g) => s + goalProgress(g), 0) / gs.length;
+}
+
+/* ===========================================================================
+   6. HANDOFF — write a promoted move into Adulting's shared store (additive)
+   =========================================================================== */
+function pushToAdulting(text, dueDate) {
+  try {
+    const raw = localStorage.getItem(ADULTING_KEY);
+    if (!raw) return { ok: false, reason: "Adulting isn't set up in this browser yet." };
+    const s = JSON.parse(raw);
+    if (!Array.isArray(s.focus)) s.focus = [];
+    if (s.focus.some((f) => f.text === text && !f.done)) return { ok: true, dup: true };
+    s.focus.push({ id: uid(), text: String(text).trim(), dueDate: dueDate || "", source: "eternal-sunshine", done: false, createdAt: Date.now() });
+    s.updatedAt = Date.now();
+    localStorage.setItem(ADULTING_KEY, JSON.stringify(s));
+    return { ok: true };
+  } catch (e) { return { ok: false, reason: e.message }; }
+}
+
+/* ===========================================================================
+   7. GOOGLE SIGN-IN + CALENDAR  (from the shared starter kit — unchanged)
+   =========================================================================== */
+const Calendar = (function () {
+  const API_BASE = "https://www.googleapis.com/calendar/v3";
+  const SCOPE = "https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/drive.appdata";
+  let tokenClient = null, gisLoaded = false, accessToken = null, tokenExpiresAt = 0;
+  function loadGisScript() {
+    if (gisLoaded) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+      if (window.google && window.google.accounts && window.google.accounts.oauth2) { gisLoaded = true; return resolve(); }
+      const s = document.createElement("script"); s.src = "https://accounts.google.com/gsi/client"; s.async = true; s.defer = true;
+      s.onload = () => { gisLoaded = true; resolve(); }; s.onerror = () => reject(new Error("Could not load Google Identity Services."));
+      document.head.appendChild(s);
+    });
+  }
+  function restoreTokenFromSession() { try { const raw = sessionStorage.getItem(APP.tokenSessionKey); if (!raw) return; const p = JSON.parse(raw); if (p.expiresAt > Date.now()) { accessToken = p.accessToken; tokenExpiresAt = p.expiresAt; } } catch (e) {} }
+  function persistToken() { try { sessionStorage.setItem(APP.tokenSessionKey, JSON.stringify({ accessToken, expiresAt: tokenExpiresAt })); } catch (e) {} }
+  function init(clientId) { restoreTokenFromSession(); return loadGisScript().then(() => { if (!clientId) throw new Error("No Google OAuth Client ID configured yet."); tokenClient = window.google.accounts.oauth2.initTokenClient({ client_id: clientId, scope: SCOPE, callback: () => {} }); }); }
+  function isConnected() { return !!accessToken && Date.now() < tokenExpiresAt; }
+  function getAccessToken() { return isConnected() ? accessToken : null; }
+  function connect() {
+    return new Promise((resolve, reject) => {
+      if (!tokenClient) return reject(new Error("Not initialized yet — save your Client ID first."));
+      let settled = false;
+      const t = setTimeout(() => { if (settled) return; settled = true; reject(new Error("Google's sign-in window didn't open or was closed — usually a pop-up blocker. Allow pop-ups and try Connect again.")); }, 20000);
+      tokenClient.callback = (resp) => {
+        if (settled) return; settled = true; clearTimeout(t);
+        if (resp.error) return reject(new Error(resp.error));
+        const granted = (resp.scope || "").split(/\s+/);
+        if (!granted.includes("https://www.googleapis.com/auth/drive.appdata")) return reject(new Error("Google signed you in but didn't grant Drive access this time. Disconnect, Connect again, and keep the Drive permission checked."));
+        accessToken = resp.access_token; tokenExpiresAt = Date.now() + (Number(resp.expires_in || 3600) - 60) * 1000; persistToken(); resolve();
+      };
+      tokenClient.requestAccessToken({ prompt: "consent" });
+    });
+  }
+  function ensureToken() {
+    if (isConnected()) return Promise.resolve(true);
+    return new Promise((resolve) => {
+      if (!tokenClient) return resolve(false);
+      tokenClient.callback = (resp) => { if (resp.error) return resolve(false); accessToken = resp.access_token; tokenExpiresAt = Date.now() + (Number(resp.expires_in || 3600) - 60) * 1000; persistToken(); resolve(true); };
+      try { tokenClient.requestAccessToken({ prompt: "" }); } catch (e) { resolve(false); }
+    });
+  }
+  function disconnect() { if (accessToken && window.google) { try { window.google.accounts.oauth2.revoke(accessToken, () => {}); } catch (e) {} } accessToken = null; tokenExpiresAt = 0; sessionStorage.removeItem(APP.tokenSessionKey); }
+  return { init, isConnected, connect, ensureToken, disconnect, getAccessToken };
 })();
+
+/* ===========================================================================
+   8. GOOGLE DRIVE CROSS-DEVICE SYNC  (from the shared starter kit — unchanged)
+   =========================================================================== */
+const DriveSync = (function () {
+  const API_BASE = "https://www.googleapis.com/drive/v3", UPLOAD_BASE = "https://www.googleapis.com/upload/drive/v3";
+  let cachedFileId = null;
+  function available() { return Calendar.getAccessToken ? !!Calendar.getAccessToken() : false; }
+  function authHeaders() { const t = Calendar.getAccessToken(); if (!t) throw new Error("Not signed in to Google."); return { Authorization: "Bearer " + t }; }
+  async function findFileId() {
+    if (cachedFileId) return cachedFileId;
+    const params = new URLSearchParams({ spaces: "appDataFolder", q: "name='" + APP.driveFileName + "'", fields: "files(id, modifiedTime)", pageSize: "1" });
+    const res = await fetch(API_BASE + "/files?" + params.toString(), { headers: authHeaders() });
+    if (!res.ok) throw new Error("Drive lookup failed: " + res.status);
+    const file = ((await res.json()).files || [])[0]; cachedFileId = file ? file.id : null; return cachedFileId;
+  }
+  async function pull() { if (!available()) return null; const id = await findFileId(); if (!id) return null; const res = await fetch(API_BASE + "/files/" + id + "?alt=media", { headers: authHeaders() }); if (!res.ok) throw new Error("Drive read failed: " + res.status); try { return await res.json(); } catch (e) { return null; } }
+  async function push(state) {
+    if (!available()) return false;
+    const body = JSON.stringify(state); const id = await findFileId();
+    if (id) { const res = await fetch(UPLOAD_BASE + "/files/" + id + "?uploadType=media", { method: "PATCH", headers: Object.assign({ "Content-Type": "application/json" }, authHeaders()), body }); if (!res.ok) throw new Error("Drive save failed: " + res.status); return true; }
+    const boundary = "boundary-" + Date.now();
+    const metadata = JSON.stringify({ name: APP.driveFileName, parents: ["appDataFolder"] });
+    const multipartBody = "--" + boundary + "\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n" + metadata + "\r\n--" + boundary + "\r\nContent-Type: application/json\r\n\r\n" + body + "\r\n--" + boundary + "--";
+    const res = await fetch(UPLOAD_BASE + "/files?uploadType=multipart", { method: "POST", headers: Object.assign({ "Content-Type": "multipart/related; boundary=" + boundary }, authHeaders()), body: multipartBody });
+    if (!res.ok) throw new Error("Drive create failed: " + res.status); cachedFileId = (await res.json()).id; return true;
+  }
+  return { available, pull, push };
+})();
+
+async function syncFromDriveIfNewer(opts) {
+  opts = opts || {};
+  if (!DriveSync.available()) { const e = new Error("Not connected to Google — connect first."); if (opts.surfaceErrors) throw e; return { pulled: false }; }
+  try {
+    const remote = await DriveSync.pull();
+    if (remote && typeof remote === "object" && (remote.updatedAt || 0) > (STATE.updatedAt || 0)) { STATE = remote; saveState(); render(); toast("Loaded your latest data from Google Drive"); return { pulled: true }; }
+    await DriveSync.push(STATE); return { pulled: false };
+  } catch (e) { console.warn("Drive sync failed:", e); if (opts.surfaceErrors) throw friendlyDriveError(e); return { pulled: false, error: e }; }
+}
+function friendlyDriveError(e) {
+  const msg = String((e && e.message) || e);
+  if (msg.includes("403")) return new Error("Google didn't grant Drive access, or the Drive API isn't enabled for your Google Cloud project yet (APIs & Services → Library → Google Drive API → Enable). Then Disconnect and Connect again.");
+  if (msg.includes("401")) return new Error("Your Google sign-in expired. Click Reconnect.");
+  return new Error("Drive sync failed (" + msg + "). Try Disconnect then Connect again.");
+}
+async function connectGoogle() {
+  if (!STATE.settings.googleClientId) { toast("Enter your Google OAuth Client ID first."); return; }
+  try { await Calendar.init(STATE.settings.googleClientId); await Calendar.connect(); toast("Connected to Google"); try { await syncFromDriveIfNewer({ surfaceErrors: true }); } catch (e) { toast(e.message); } openSettingsModal(); }
+  catch (e) { toast(e.message || "Couldn't connect to Google."); }
+}
+
+/* ===========================================================================
+   9. NOTIFICATIONS  (from the shared starter kit)
+   =========================================================================== */
+function enableNotifications() {
+  if (typeof Notification === "undefined") { toast("Notifications aren't supported in this browser."); return; }
+  if (Notification.permission === "granted") { STATE.settings.notificationsEnabled = true; persist(); toast("Notifications are already on."); return; }
+  if (Notification.permission === "denied") { toast("Notifications are blocked — allow them in your browser's site settings."); return; }
+  Notification.requestPermission().then((perm) => { STATE.settings.notificationsEnabled = perm === "granted"; persist(); toast(perm === "granted" ? "Notifications enabled" : "No worries — you can turn this on later."); openSettingsModal(); });
+}
+
+/* ===========================================================================
+   10. ASSISTANT (Blue Bonnet) — add & edit only, never delete.
+   =========================================================================== */
+const ASSISTANT_SYSTEM =
+  "You are Blue Bonnet, a warm, practical companion inside Eternal Sunshine — a long-horizon goal app that sits above the user's daily apps (Adulting, Businessing). " +
+  "Goals are a date or a condition, each with milestones and weekly actions that actually move them. Keep replies short and concrete. " +
+  "You can add goals, add actions, and check actions off, but you never delete anything — deleting stays a manual action in the UI. If unsure, ask one short question.";
+
+const ASSISTANT_TOOLS = [
+  { name: "add_goal", description: "Create a new goal.", input_schema: { type: "object", properties: {
+    name: { type: "string" }, type: { type: "string", enum: ["date", "condition"], description: "date = fixed deadline; condition = ready when milestones are met." },
+    targetDate: { type: "string", description: "YYYY-MM-DD, for date goals." } }, required: ["name", "type"] } },
+  { name: "add_action", description: "Add a weekly action under a goal (optionally under a named milestone). Match the goal by name, fuzzy is fine.", input_schema: { type: "object", properties: {
+    goal: { type: "string" }, action: { type: "string" }, milestone: { type: "string", description: "Optional milestone name; created if missing." } }, required: ["goal", "action"] } },
+  { name: "complete_action", description: "Check off an action under a goal. Match by text, fuzzy is fine.", input_schema: { type: "object", properties: {
+    goal: { type: "string" }, action: { type: "string" } }, required: ["goal", "action"] } },
+];
+function findGoal(name) { const q = String(name || "").toLowerCase().trim(); return STATE.goals.find((g) => g.name.toLowerCase() === q) || STATE.goals.find((g) => g.name.toLowerCase().includes(q)) || STATE.goals.find((g) => q.includes(g.name.toLowerCase())); }
+const ASSISTANT_HANDLERS = {
+  add_goal: (i) => {
+    const g = newGoal(String(i.name).trim(), i.type === "date" ? "date" : "condition");
+    if (i.type === "date" && i.targetDate) { g.targetDate = i.targetDate; g.startDate = todayISO(); }
+    STATE.goals.push(g); persist(); return { ok: true, message: "Added goal: " + g.name };
+  },
+  add_action: (i) => {
+    const g = findGoal(i.goal); if (!g) return { ok: false, message: 'No goal called "' + i.goal + '".' };
+    let m = i.milestone ? (g.milestones.find((x) => x.name.toLowerCase() === String(i.milestone).toLowerCase())) : g.milestones[0];
+    if (!m) { m = { id: uid(), name: i.milestone || "Actions", weight: 1, actions: [] }; g.milestones.push(m); }
+    m.actions.push({ id: uid(), text: String(i.action).trim(), done: false }); persist();
+    return { ok: true, message: "Added action to " + g.name + ": " + i.action };
+  },
+  complete_action: (i) => {
+    const g = findGoal(i.goal); if (!g) return { ok: false, message: 'No goal called "' + i.goal + '".' };
+    const q = String(i.action || "").toLowerCase().trim(); let hit = null;
+    (g.milestones || []).forEach((m) => (m.actions || []).forEach((a) => { if (!hit && (a.text.toLowerCase() === q || a.text.toLowerCase().includes(q) || q.includes(a.text.toLowerCase()))) hit = a; }));
+    if (!hit) return { ok: false, message: "Couldn't find that action under " + g.name + "." };
+    hit.done = true; persist(); return { ok: true, message: "Checked off: " + hit.text };
+  },
+};
+async function callAssistantTool(name, input) { const h = ASSISTANT_HANDLERS[name]; if (!h) return { ok: false, message: "Unknown tool: " + name }; try { return await h(input || {}); } catch (e) { return { ok: false, message: "That failed: " + e.message }; } }
+function buildAssistantContext() {
+  const lines = ["Today: " + todayISO(), "Goals (" + STATE.goals.length + "):"];
+  STATE.goals.slice(0, 20).forEach((g) => { const p = Math.round(goalProgress(g) * 100); lines.push("- " + g.name + " [" + g.type + "] " + p + "% done" + (g.type === "date" && g.targetDate ? ", due " + g.targetDate : "")); });
+  return lines.join("\n");
+}
+let asOpen = false, asLoading = false, asMessages = [], asApiMessages = [];
+function renderAssistant() {
+  const root = document.getElementById("asRoot"); const ready = !!STATE.settings.assistantProxyUrl;
+  root.innerHTML =
+    '<button class="as-bubble" data-action="as-toggle" title="' + escapeHtml(APP.assistantName) + '">' + APP.assistantEmoji + "</button>" +
+    '<div class="as-panel' + (asOpen ? " open" : "") + '"><div class="as-header"><span>' + escapeHtml(APP.assistantName) + '</span><button data-action="as-close">✕</button></div>' +
+      '<div class="as-body" id="asBody">' + (asMessages.length ? asMessages.map(renderAssistantMessage).join("") : '<div class="as-row as-assistant"><div class="as-text">Morning. What are we moving toward?</div></div>') + "</div>" +
+      '<form class="as-input-row" id="asForm"><input type="text" id="asInput" placeholder="' + (ready ? "Ask Blue Bonnet…" : "Set a Worker URL in Settings first") + '" ' + (ready ? "" : "disabled") + ' /><button type="submit"' + (ready ? "" : " disabled") + ">Send</button></form></div>";
+  const form = document.getElementById("asForm");
+  if (form) form.addEventListener("submit", (e) => { e.preventDefault(); const inp = document.getElementById("asInput"); const t = inp.value.trim(); if (t) { inp.value = ""; assistantSend(t); } });
+  const body = document.getElementById("asBody"); if (body) body.scrollTop = body.scrollHeight;
+}
+function renderAssistantMessage(m) {
+  if (m.role === "user") return '<div class="as-row as-user"><div class="as-text">' + escapeHtml(m.text) + "</div></div>";
+  return '<div class="as-row as-assistant"><div class="as-text">' + escapeHtml(m.text) + ((m.actionNotes || []).map((n) => '<div class="as-action-note">✓ ' + escapeHtml(n) + "</div>").join("")) + "</div></div>";
+}
+async function assistantSend(text) {
+  if (asLoading) return; const proxyUrl = STATE.settings.assistantProxyUrl; if (!proxyUrl) { toast("Set a Worker URL in Settings first."); return; }
+  asMessages.push({ role: "user", text }); asApiMessages.push({ role: "user", content: text }); asLoading = true;
+  asMessages.push({ role: "assistant", text: "thinking…", isLoading: true }); renderAssistant();
+  try {
+    let finalText = ""; const actionNotes = []; const MAX_ROUNDS = 4;
+    for (let round = 0; round < MAX_ROUNDS; round++) {
+      const res = await fetch(proxyUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: "claude-sonnet-5", max_tokens: 1024, system: ASSISTANT_SYSTEM + "\n\nCurrent state:\n" + buildAssistantContext(), tools: ASSISTANT_TOOLS, messages: asApiMessages }) });
+      if (!res.ok) { const t = await res.text().catch(() => ""); throw new Error("Proxy error " + res.status + ": " + t); }
+      const data = await res.json(); const content = data.content || []; asApiMessages.push({ role: "assistant", content });
+      const textBlocks = content.filter((b) => b.type === "text").map((b) => b.text); if (textBlocks.length) finalText = textBlocks.join("\n");
+      const toolBlocks = content.filter((b) => b.type === "tool_use"); if (!toolBlocks.length) break;
+      const toolResults = [];
+      for (const b of toolBlocks) { const r = await callAssistantTool(b.name, b.input); if (r && r.message) actionNotes.push(r.message); toolResults.push({ type: "tool_result", tool_use_id: b.id, content: JSON.stringify(r) }); }
+      asApiMessages.push({ role: "user", content: toolResults });
+      if (round === MAX_ROUNDS - 1) finalText = finalText || "Done — see above for what I changed.";
+    }
+    asMessages = asMessages.filter((m) => !m.isLoading); asMessages.push({ role: "assistant", text: finalText || "Done.", actionNotes });
+  } catch (e) { console.error(e); asMessages = asMessages.filter((m) => !m.isLoading); asMessages.push({ role: "assistant", text: "Something went wrong reaching Blue Bonnet: " + e.message }); }
+  finally { asLoading = false; renderAssistant(); }
+}
+
+/* ===========================================================================
+   11. BACKUP + SETTINGS  (from the shared starter kit)
+   =========================================================================== */
+function exportBackup() { const blob = new Blob([JSON.stringify(STATE, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = APP.storageKey + "-backup-" + todayISO() + ".json"; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); toast("Backup downloaded"); }
+function importBackupFile(file) { const r = new FileReader(); r.onload = () => { try { const parsed = JSON.parse(r.result); if (!parsed || !Array.isArray(parsed.goals)) { toast("That doesn't look like an Eternal Sunshine backup."); return; } if (!confirm("Replace everything with this backup?")) return; STATE = Object.assign(defaultState(), parsed); STATE.settings = Object.assign(defaultState().settings, parsed.settings || {}); persist(); closeModal(); toast("Backup restored"); } catch (e) { toast("Couldn't read that file."); } }; r.readAsText(file); }
+function openSettingsModal() {
+  const connected = Calendar.isConnected();
+  openModal(
+    "<h3>Settings</h3><form data-form=\"settings-form\">" +
+    '<p class="hint">Connect Google for cross-device sync via your own private Drive folder. One Client ID &amp; Worker cover every app on this account — if you set up Adulting, these may already be filled in.</p>' +
+    '<div class="field"><label>Google OAuth Client ID</label><input type="text" name="googleClientId" value="' + escapeHtml(STATE.settings.googleClientId || "") + '" placeholder="xxxx.apps.googleusercontent.com" /></div>' +
+    '<div class="field"><label>Calendar ID</label><input type="text" name="defaultCalendarId" value="' + escapeHtml(STATE.settings.defaultCalendarId || "primary") + '" /></div>' +
+    '<div class="row" style="margin-bottom:10px"><button type="submit" class="btn-sm">Save</button>' +
+      '<button type="button" class="btn-sm" data-action="connect-google">' + (connected ? "Reconnect" : "Connect") + "</button>" +
+      (connected ? '<button type="button" class="btn-sm" data-action="disconnect-google">Disconnect</button><span class="status-pill done">Connected</span>' : '<span class="status-pill none">Not connected</span>') + "</div>" +
+    (connected ? '<div class="hr"></div><div class="row between"><div><strong style="font-size:13px">Cross-device sync</strong><div class="hint">Saves to your Google Drive, loads on any device with the same account.</div></div><button type="button" class="btn-sm" data-action="sync-drive-now">Sync now</button></div>' : "") +
+    '<div class="hr"></div><p class="hint">Blue Bonnet talks to Claude through your own Cloudflare Worker — no API key in this file.</p>' +
+    '<div class="field"><label>Worker Proxy URL</label><input type="text" name="assistantProxyUrl" value="' + escapeHtml(STATE.settings.assistantProxyUrl || "") + '" placeholder="https://your-worker.workers.dev" /></div>' +
+    '<label class="row" style="margin-bottom:10px;font-size:13px"><input type="checkbox" name="assistantCheckins" ' + (STATE.settings.assistantCheckins ? "checked" : "") + ' style="width:16px;height:16px" /> Let Blue Bonnet check in on its own (off by default)</label>' +
+    '<button type="submit" class="btn-sm">Save assistant settings</button><div class="hr"></div>' +
+    '<div class="row between"><div><strong style="font-size:13px">Notifications</strong><div class="hint">Only while a tab is open.</div></div>' +
+      (typeof Notification === "undefined" ? '<span class="status-pill none">Not supported</span>' : Notification.permission === "granted" ? '<span class="status-pill done">Enabled</span>' : '<button type="button" class="btn-sm" data-action="enable-notifications">Enable</button>') + "</div>" +
+    '<div class="hr"></div><div class="row between"><div><strong style="font-size:13px">Backup</strong><div class="hint">Export or restore a .json backup.</div></div>' +
+      '<div class="row"><button type="button" class="btn-sm" data-action="export-backup">Export</button><label class="btn-sm" style="cursor:pointer">Import<input type="file" accept=".json" id="importFile" style="display:none" /></label></div></div>' +
+    "</form><div class=\"modal-actions\"><button type=\"button\" class=\"btn-ghost\" data-action=\"close-modal\">Close</button></div>"
+  );
+  document.querySelector('[data-form="settings-form"]').addEventListener("submit", (e) => {
+    e.preventDefault(); const d = Object.fromEntries(new FormData(e.target).entries());
+    STATE.settings.googleClientId = (d.googleClientId || "").trim(); STATE.settings.defaultCalendarId = (d.defaultCalendarId || "primary").trim();
+    STATE.settings.assistantProxyUrl = (d.assistantProxyUrl || "").trim(); STATE.settings.assistantCheckins = !!d.assistantCheckins;
+    persist(); renderAssistant(); toast("Saved");
+  });
+  const imp = document.getElementById("importFile"); if (imp) imp.addEventListener("change", (e) => { if (e.target.files[0]) importBackupFile(e.target.files[0]); });
+}
+
+/* ===========================================================================
+   12. GOAL FACTORY + SEED
+   =========================================================================== */
+function newGoal(name, type) {
+  return { id: uid(), name, type: type || "condition", createdAt: Date.now(), startDate: todayISO(), targetDate: null, note: "",
+    milestones: [], gates: [] };
+}
+function seedIfEmpty() {
+  if (STATE.goals.length) return;
+  const spain = newGoal("Spain", "date"); spain.startDate = todayISO(); spain.targetDate = addDaysISO(todayISO(), 270);
+  spain.milestones = [
+    { id: uid(), name: "Savings", weight: 2, actions: [ { id: uid(), text: "Move $600 to the Spain fund", done: false }, { id: uid(), text: "Hit 50% of the trip budget", done: false } ] },
+    { id: uid(), name: "Logistics", weight: 1, actions: [ { id: uid(), text: "Price coastal stays for week two", done: false }, { id: uid(), text: "Lock the flight dates", done: false } ] },
+  ];
+  const adv = newGoal("Step back from ADV Media", "condition");
+  adv.createdAt = Date.now() - 75 * 86400000; // backdated so the projection has velocity to work with
+  adv.milestones = [
+    { id: uid(), name: "Execute", weight: 40, actions: [ { id: uid(), text: "Last 3 shows ran without me on-site", done: true } ] },
+    { id: uid(), name: "Win → Schedule", weight: 25, actions: [ { id: uid(), text: "Turn on auto-rostering for the next 2 shows", done: false }, { id: uid(), text: "Teams feeds crew availability into scheduling", done: false } ] },
+    { id: uid(), name: "Bill & Collect", weight: 15, actions: [ { id: uid(), text: "Invoices auto-generate on show completion", done: true } ] },
+    { id: uid(), name: "Qualify & Bid", weight: 12, actions: [ { id: uid(), text: "Blue Bonnet drafts every bid", done: false } ] },
+    { id: uid(), name: "Source", weight: 8, actions: [ { id: uid(), text: "Leads arrive scored, no manual portal checks", done: true } ] },
+  ];
+  adv.gates = [ { id: uid(), text: "Revenue floor holds without me", status: "done" }, { id: uid(), text: "Crew can run AND front the company in my absence", status: "wip" }, { id: uid(), text: "EIC seat covered when I travel", status: "no" } ];
+  STATE.goals = [spain, adv]; saveState();
+}
+
+/* ===========================================================================
+   13. VIEWS
+   =========================================================================== */
+function skyBand(g, big) {
+  const p = goalProgress(g); const te = timeElapsed(g);
+  let html = '<div class="horizon' + (big ? " big" : "") + '"><div class="hstars"></div>';
+  if (te != null) html += '<div class="hmark" style="left:' + (te * 100).toFixed(1) + '%"></div>';
+  html += '<div class="hsun" style="left:' + Math.max(6, Math.min(94, p * 100)).toFixed(1) + '%"></div><div class="hground"></div></div>';
+  return html;
+}
+function goalStatusChip(g) {
+  const p = goalProgress(g);
+  if (p >= 1) return '<span class="chip done">Complete ☀</span>';
+  if (g.type === "date") { const te = timeElapsed(g); if (te == null) return '<span class="chip est">Est</span>'; const drift = p - te; return drift >= -0.02 ? '<span class="chip pace">On pace</span>' : '<span class="chip behind">Behind pace</span>'; }
+  return '<span class="chip est">Est</span>';
+}
+function goalMetaLine(g) {
+  const p = goalProgress(g);
+  if (g.type === "date") {
+    const d = g.targetDate ? daysBetween(todayISO(), g.targetDate) : null;
+    return fmtDate(g.targetDate) + (d != null ? " · in " + humanMonths(d) : "");
+  }
+  const pr = projected(g);
+  if (pr.done) return "Ready now";
+  if (pr.early) return "Projection building…";
+  if (pr.stalled) return "Stalled — no projected date yet";
+  return "Projected " + humanMonths(pr.days);
+}
+
+function renderHorizon() {
+  const gs = STATE.goals || [];
+  let html =
+    '<div class="apphead"><div><div class="greet">' + new Date().toLocaleDateString(undefined, { weekday: "long" }) + ' morning, Dusty</div><h1>The <span class="s">Horizon</span></h1></div>' +
+    '<button class="btn-sm" data-action="open-settings">⚙</button></div>';
+  if (!gs.length) html += '<div class="empty">No goals yet.<br>Add the first thing worth working toward.</div>';
+  gs.forEach((g) => {
+    const p = goalProgress(g); const move = thisWeekMoves(g)[0];
+    html +=
+      '<div class="card tap" data-action="open-goal" data-id="' + g.id + '">' +
+      '<div class="row between"><div><div class="goal-name">' + escapeHtml(g.name) + '</div><div class="goal-sub">' + goalMetaLine(g) + '</div></div>' + goalStatusChip(g) + "</div>" +
+      skyBand(g, false) +
+      '<div class="meta-row"><div class="big-num">' + Math.round(p * 100) + '% <small>' + (g.type === "date" ? "of the path done" : "of the load lifted") + '</small></div>' +
+        (g.type === "condition" ? (function () { const w = weakestMilestone(g); return w && milestoneProgress(w) < 1 ? '<div class="big-num" style="color:var(--coral)">' + escapeHtml(w.name) + ' <small>is the wall</small></div>' : ""; })()
+          : (function () { const te = timeElapsed(g); if (te == null) return ""; const dr = Math.round((p - te) * 100); return '<div class="big-num" style="color:' + (dr >= 0 ? "var(--mint)" : "var(--coral)") + '">' + (dr >= 0 ? "+" : "") + dr + '% <small>vs time</small></div>'; })()) +
+      "</div>" +
+      (move ? '<div class="week-move"><span class="dot"></span><span><b>This week:</b> ' + escapeHtml(move.a.text) + "</span></div>" : "") +
+      "</div>";
+  });
+  html += '<button class="btn-primary" style="width:100%;margin-top:6px" data-action="add-goal">+ New goal</button>';
+  document.getElementById("app").innerHTML = html;
+  setSky(overallProgress());
+}
+
+function renderGoalDetail(g) {
+  const p = goalProgress(g);
+  let html =
+    '<div class="apphead"><div><button class="btn-ghost" data-action="go-horizon" style="padding:0;margin-bottom:4px">‹ Horizon</button>' +
+    '<h1 style="font-size:21px">' + escapeHtml(g.name) + "</h1>" +
+    '<div class="greet">' + (g.type === "date" ? "Date-anchored · " + goalMetaLine(g) : "Condition-anchored · " + goalMetaLine(g)) + "</div></div>" +
+    goalStatusChip(g) + "</div>" +
+    skyBand(g, true) +
+    '<div class="meta-row"><div class="big-num" style="font-size:22px">' + Math.round(p * 100) + '% <small>' + (g.type === "date" ? "of the path done" : "of the load lifted") + "</small></div></div>";
+
+  html += '<div class="section-title">' + (g.type === "condition" ? "Stages · weakest link governs" : "Milestones") + "</div>";
+  const worst = weakestMilestone(g);
+  (g.milestones || []).forEach((m) => {
+    const mp = milestoneProgress(m); const isWall = g.type === "condition" && worst && m.id === worst.id && mp < 1;
+    html += '<div class="stage' + (isWall ? " wall" : "") + '"><div class="stage-row"><span class="stage-name">' + escapeHtml(m.name) + (g.type === "condition" ? '<span class="w">·' + (m.weight || 1) + "%</span>" : "") + '</span><span class="stage-val">' + Math.round(mp * 100) + "%</span></div><div class=\"bar\"><span style=\"width:" + Math.round(mp * 100) + '%"></span></div>';
+    (m.actions || []).forEach((a) => {
+      html += '<div class="action"><button class="check' + (a.done ? " on" : "") + '" data-action="toggle-action" data-gid="' + g.id + '" data-mid="' + m.id + '" data-aid="' + a.id + '"></button>' +
+        '<div class="a-txt' + (a.done ? " done" : "") + '">' + escapeHtml(a.text) + "</div>" +
+        '<div class="a-tools">' + (a.done ? "" : '<button class="btn-sm" data-action="send-move" data-gid="' + g.id + '" data-aid="' + a.id + '" title="Send to Adulting as a daily task">→ Adulting</button>') + "</div></div>";
+    });
+    html += '<div style="margin-top:8px"><button class="btn-ghost" style="font-size:12.5px" data-action="add-action" data-gid="' + g.id + '" data-mid="' + m.id + '">+ action</button></div></div>';
+  });
+  html += '<div style="margin-top:12px"><button class="btn-sm" data-action="add-milestone" data-gid="' + g.id + '">+ ' + (g.type === "condition" ? "stage" : "milestone") + "</button></div>";
+
+  if (g.type === "condition" && (g.gates || []).length) {
+    html += '<div class="section-title">What still ties you here</div>';
+    g.gates.forEach((gt) => {
+      const ic = gt.status === "done" ? "✓" : gt.status === "wip" ? "◐" : "○";
+      html += '<div class="gate ' + gt.status + '"><button class="g-ic" data-action="cycle-gate" data-gid="' + g.id + '" data-gtid="' + gt.id + '">' + ic + '</button><span class="g-txt">' + escapeHtml(gt.text) + "</span></div>";
+    });
+  }
+  document.getElementById("app").innerHTML = html;
+  setSky(p);
+}
+
+function renderCheck() {
+  let html = '<div class="apphead"><div><div class="greet">Sunday ritual</div><h1>Horizon <span class="s">Check</span></h1></div><button class="btn-sm" data-action="open-settings">⚙</button></div>';
+  html += '<p class="hint" style="margin:0 0 8px 4px">Pick the one thing that matters per goal. Sending drops it into Adulting as a real daily task.</p>';
+  let any = false;
+  (STATE.goals || []).forEach((g) => {
+    const moves = thisWeekMoves(g).slice(0, 3); if (!moves.length) return; any = true;
+    html += '<div class="section-title" style="display:flex;gap:8px;align-items:center"><span style="width:8px;height:8px;border-radius:50%;background:var(--gold);display:inline-block"></span>' + escapeHtml(g.name) + "</div>";
+    moves.forEach((mv) => {
+      html += '<div class="card" style="margin-bottom:8px"><div class="action" style="border:0;padding:0">' +
+        '<button class="check" data-action="send-move" data-gid="' + g.id + '" data-aid="' + mv.a.id + '"></button>' +
+        '<div class="a-txt">' + escapeHtml(mv.a.text) + '<small>' + escapeHtml(mv.m.name) + '</small></div></div></div>';
+    });
+  });
+  if (!any) html += '<div class="empty">Nothing outstanding this week. Enjoy the sunshine.</div>';
+  document.getElementById("app").innerHTML = html;
+  setSky(overallProgress());
+}
+
+function renderTabbar() {
+  const t = VIEW.name;
+  const bar = '<div class="tabbar">' +
+    '<button class="' + (t === "horizon" || t === "goal" ? "on" : "") + '" data-action="go-horizon"><span class="ic">☀</span>Horizon</button>' +
+    '<button class="' + (t === "check" ? "on" : "") + '" data-action="go-check"><span class="ic">✓</span>Weekly</button>' +
+    '<button data-action="open-settings"><span class="ic">⚙</span>Settings</button></div>';
+  let el = document.getElementById("tabbar");
+  if (!el) { el = document.createElement("div"); el.id = "tabbar"; document.body.appendChild(el); }
+  el.innerHTML = bar;
+}
+
+function render() {
+  seedIfEmpty();
+  if (VIEW.name === "goal") { const g = STATE.goals.find((x) => x.id === VIEW.goalId); if (!g) { VIEW = { name: "horizon" }; } else { renderGoalDetail(g); renderTabbar(); return; } }
+  if (VIEW.name === "check") renderCheck();
+  else renderHorizon();
+  renderTabbar();
+}
+
+/* ===========================================================================
+   14. MODALS
+   =========================================================================== */
+function openAddGoalModal() {
+  openModal(
+    "<h3>New goal</h3><form data-form=\"add-goal\">" +
+    '<div class="field"><label>What are you working toward?</label><input type="text" name="name" required autofocus placeholder="e.g. Spain, step back from ADV Media" /></div>' +
+    '<div class="field"><label>Kind of goal</label><select name="type"><option value="date">Has a date (countdown)</option><option value="condition">Happens when it\'s ready (condition)</option></select></div>' +
+    '<div class="field" id="dateField"><label>Target date</label><input type="date" name="targetDate" /></div>' +
+    '<div class="modal-actions"><button type="button" class="btn-ghost" data-action="close-modal">Cancel</button><button type="submit" class="btn-primary">Add goal</button></div></form>'
+  );
+  const form = document.querySelector('[data-form="add-goal"]');
+  form.querySelector('[name="type"]').addEventListener("change", (e) => { document.getElementById("dateField").style.display = e.target.value === "date" ? "" : "none"; });
+  form.addEventListener("submit", (e) => {
+    e.preventDefault(); const d = Object.fromEntries(new FormData(e.target).entries());
+    const g = newGoal(d.name.trim(), d.type);
+    if (d.type === "date") { g.startDate = todayISO(); g.targetDate = d.targetDate || addDaysISO(todayISO(), 180); }
+    g.milestones = [{ id: uid(), name: d.type === "condition" ? "Stage 1" : "Milestone 1", weight: d.type === "condition" ? 100 : 1, actions: [] }];
+    STATE.goals.push(g); VIEW = { name: "goal", goalId: g.id }; persist(); closeModal();
+  });
+}
+function openAddActionModal(gid, mid) {
+  openModal("<h3>Add action</h3><form data-form=\"add-action\"><div class=\"field\"><label>What's the move?</label><input type=\"text\" name=\"text\" required autofocus placeholder=\"a concrete weekly step\" /></div><div class=\"modal-actions\"><button type=\"button\" class=\"btn-ghost\" data-action=\"close-modal\">Cancel</button><button type=\"submit\" class=\"btn-primary\">Add</button></div></form>");
+  document.querySelector('[data-form="add-action"]').addEventListener("submit", (e) => {
+    e.preventDefault(); const d = Object.fromEntries(new FormData(e.target).entries());
+    const g = STATE.goals.find((x) => x.id === gid); const m = g && g.milestones.find((x) => x.id === mid); if (!m) return;
+    m.actions.push({ id: uid(), text: d.text.trim(), done: false }); persist(); closeModal();
+  });
+}
+function openAddMilestoneModal(gid) {
+  const g = STATE.goals.find((x) => x.id === gid); if (!g) return; const cond = g.type === "condition";
+  openModal("<h3>Add " + (cond ? "stage" : "milestone") + "</h3><form data-form=\"add-ms\"><div class=\"field\"><label>Name</label><input type=\"text\" name=\"name\" required autofocus /></div>" + (cond ? '<div class="field"><label>Weight (% of your load)</label><input type="number" name="weight" min="1" max="100" value="10" /></div>' : "") + '<div class="modal-actions"><button type="button" class="btn-ghost" data-action="close-modal">Cancel</button><button type="submit" class="btn-primary">Add</button></div></form>');
+  document.querySelector('[data-form="add-ms"]').addEventListener("submit", (e) => {
+    e.preventDefault(); const d = Object.fromEntries(new FormData(e.target).entries());
+    g.milestones.push({ id: uid(), name: d.name.trim(), weight: cond ? (parseInt(d.weight, 10) || 10) : 1, actions: [] }); persist(); closeModal();
+  });
+}
+
+/* ===========================================================================
+   15. ACTIONS
+   =========================================================================== */
+function toggleAction(gid, mid, aid) {
+  const g = STATE.goals.find((x) => x.id === gid); const m = g && g.milestones.find((x) => x.id === mid); const a = m && m.actions.find((x) => x.id === aid); if (!a) return;
+  const was = a.done; a.done = !a.done; persist();
+  if (!was && a.done && goalProgress(g) >= 1) toast("☀ " + g.name + " — the sun's all the way up.");
+}
+function sendMove(gid, aid) {
+  const g = STATE.goals.find((x) => x.id === gid); if (!g) return; let a = null;
+  (g.milestones || []).forEach((m) => (m.actions || []).forEach((x) => { if (x.id === aid) a = x; }));
+  if (!a) return;
+  const due = g.type === "date" && g.targetDate ? g.targetDate : "";
+  const r = pushToAdulting(a.text, due);
+  if (r.ok) { a.sentToAdulting = true; persist(); toast(r.dup ? "Already in Adulting" : "Sent to Adulting → today's list"); }
+  else toast(r.reason || "Couldn't reach Adulting's store.");
+}
+function cycleGate(gid, gtid) {
+  const g = STATE.goals.find((x) => x.id === gid); const gt = g && (g.gates || []).find((x) => x.id === gtid); if (!gt) return;
+  gt.status = gt.status === "no" ? "wip" : gt.status === "wip" ? "done" : "no"; persist();
+}
+
+/* ===========================================================================
+   16. EVENT WIRING
+   =========================================================================== */
+document.body.addEventListener("click", (e) => {
+  const el = e.target.closest("[data-action]"); if (!el) return;
+  const a = el.dataset.action, id = el.dataset.id, gid = el.dataset.gid;
+  if (a === "close-modal") closeModal();
+  else if (a === "close-modal-backdrop" && e.target === el) closeModal();
+  else if (a === "open-settings") openSettingsModal();
+  else if (a === "add-goal") openAddGoalModal();
+  else if (a === "open-goal") { VIEW = { name: "goal", goalId: id }; render(); }
+  else if (a === "go-horizon") { VIEW = { name: "horizon" }; render(); }
+  else if (a === "go-check") { VIEW = { name: "check" }; render(); }
+  else if (a === "toggle-action") toggleAction(gid, el.dataset.mid, el.dataset.aid);
+  else if (a === "send-move") sendMove(gid, el.dataset.aid);
+  else if (a === "add-action") openAddActionModal(gid, el.dataset.mid);
+  else if (a === "add-milestone") openAddMilestoneModal(gid);
+  else if (a === "cycle-gate") cycleGate(gid, el.dataset.gtid);
+  else if (a === "connect-google") connectGoogle();
+  else if (a === "disconnect-google") { Calendar.disconnect(); toast("Disconnected"); openSettingsModal(); }
+  else if (a === "sync-drive-now") syncFromDriveIfNewer({ surfaceErrors: true }).then((r) => toast(r.pulled ? "Loaded newer data from Drive" : "Synced to Drive")).catch((err) => toast(err.message));
+  else if (a === "enable-notifications") enableNotifications();
+  else if (a === "export-backup") exportBackup();
+  else if (a === "as-toggle") { asOpen = !asOpen; renderAssistant(); }
+  else if (a === "as-close") { asOpen = false; renderAssistant(); }
+});
+
+/* ===========================================================================
+   17. STARTUP
+   =========================================================================== */
+render();
+renderAssistant();
+if (STATE.settings.googleClientId) {
+  Calendar.init(STATE.settings.googleClientId).then(() => Calendar.ensureToken()).then((ok) => { if (ok) syncFromDriveIfNewer(); }).catch((e) => console.warn("Google init skipped:", e));
+}
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js");
 </script>
 </body>
 </html>
