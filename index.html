@@ -523,7 +523,7 @@ function renderAssistant() {
     '<button class="as-bubble" data-action="as-toggle" title="' + escapeHtml(APP.assistantName) + '">' + APP.assistantEmoji + "</button>" +
     '<div class="as-panel' + (asOpen ? " open" : "") + '"><div class="as-header"><span>' + escapeHtml(APP.assistantName) + '</span><button data-action="as-close">✕</button></div>' +
       '<div class="as-body" id="asBody">' + (asMessages.length ? asMessages.map(renderAssistantMessage).join("") : '<div class="as-row as-assistant"><div class="as-text">Morning. What are we moving toward?</div></div>') + "</div>" +
-      '<form class="as-input-row" id="asForm"><input type="text" id="asInput" placeholder="' + (ready ? "Ask Blue Bonnet…" : "Set a Worker URL in Settings first") + '" ' + (ready ? "" : "disabled") + ' /><button type="submit"' + (ready ? "" : " disabled") + ">Send</button></form></div>";
+      '<form class="as-input-row" id="asForm"><input type="text" id="asInput" placeholder="Ask Blue Bonnet…" autocomplete="off" /><button type="submit">Send</button></form></div>';
   const form = document.getElementById("asForm");
   if (form) form.addEventListener("submit", (e) => { e.preventDefault(); const inp = document.getElementById("asInput"); const t = inp.value.trim(); if (t) { inp.value = ""; assistantSend(t); } });
   const body = document.getElementById("asBody"); if (body) body.scrollTop = body.scrollHeight;
@@ -533,7 +533,12 @@ function renderAssistantMessage(m) {
   return '<div class="as-row as-assistant"><div class="as-text">' + escapeHtml(m.text) + ((m.actionNotes || []).map((n) => '<div class="as-action-note">✓ ' + escapeHtml(n) + "</div>").join("")) + "</div></div>";
 }
 async function assistantSend(text) {
-  if (asLoading) return; const proxyUrl = STATE.settings.assistantProxyUrl; if (!proxyUrl) { toast("Set a Worker URL in Settings first."); return; }
+  if (asLoading) return; const proxyUrl = STATE.settings.assistantProxyUrl;
+  if (!proxyUrl) {
+    asMessages.push({ role: "user", text });
+    asMessages.push({ role: "assistant", text: "I can't reach Claude yet — I just need your Cloudflare Worker URL. Tap the ⚙ up top, paste it under “Worker Proxy URL,” and Save. It's the same one your other apps use, so once those are set up I'll fill it in automatically." });
+    renderAssistant(); return;
+  }
   asMessages.push({ role: "user", text }); asApiMessages.push({ role: "user", content: text }); asLoading = true;
   asMessages.push({ role: "assistant", text: "thinking…", isLoading: true }); renderAssistant();
   try {
